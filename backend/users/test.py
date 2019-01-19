@@ -103,11 +103,11 @@ class TestUsersApi(APITestCase):
         }
 
         response = self.client.post(self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE)
-        print(response.json())
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(response.json()), 2)
-        self.assertIn(response.json(), 'user')
-        self.assertIn(response.json(), 'token')
+        self.assertIn('name', response.json())
+        self.assertIn('token', response.json(), )
 
-        user_joao = User.objects.get(username=USER_JOAO['username'])
-        self.assertEqual(user_joao.username, USER_JOAO['username'])
+        self.assertEqual(User.objects.count(), 1)
+        user_joao = User.objects.first()
+        self.assertEqual(user_joao.name, USER_JOAO['name'])
