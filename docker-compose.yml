@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  backend_postgres:
+    image: postgres:9.6
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - ./.env_vars/postgres
+  web:
+    image: web
+    env_file:
+      - ./.env_vars/postgres
+      - ./.env_vars/django
+    environment:
+      - DJANGO_SECRET_KEY=local_secret
+    build: ./
+    volumes:
+      - ./:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - backend_postgres
+
+volumes:
+  pgdata:
