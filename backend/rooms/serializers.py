@@ -14,11 +14,16 @@ class UserInRoomSerializer(serializers.ModelSerializer):
 class RoomSerializer(serializers.ModelSerializer):
     users = UserInRoomSerializer(many=True, read_only=True)
 
+    def update(self, instance, validated_data):
+        instance.sync_user(self.context['request'].user)
+        return super().update(instance, validated_data)
+
     def create(self, validated_data):
         validated_data['admin'] = self.context['request'].user
-        room = super().create(validated_data)
-        room.initialize_users()
-        return room
+        instance = super().create(validated_data)
+
+        instance.sync_user(self.context['request'].user)
+        return instance
 
     class Meta:
         model = Room

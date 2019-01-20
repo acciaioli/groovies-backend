@@ -8,5 +8,5 @@ class RoomManager(models.Manager):
 
     def create_room(self, admin: User, **kwargs):
         room = self.create(admin=admin, **kwargs)
-        room.initialize_users()
+        room.sync_user(room.admin)
         return room

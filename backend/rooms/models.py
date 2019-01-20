@@ -28,6 +28,5 @@ class Room(models.Model):
 
     users = models.ManyToManyField(to='users.User', related_name='rooms')
 
-    def initialize_users(self) -> None:
-        self.users.add(self.admin)
-        self.save()
+    def sync_user(self, user):
+        self.users.add(user)
