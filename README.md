@@ -1,86 +1,43 @@
-# backend
+# Groovies Backend
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
+[![Build Status](https://travis-ci.com/Chi-Acci/groovies-backend.svg?branch=master)](https://travis-ci.com/Chi-Acci/groovies-backend)
+[![codecov](https://codecov.io/gh/Chi-Acci/groovies-backend/branch/master/graph/badge.svg)](https://codecov.io/gh/Chi-Acci/groovies-backend/branch/master)
 
-## Rest Api Service
+Backend for the Groovies Project
 
-Where to go from here ? 
-
-### 0. Install docker
-
-https://docs.docker.com/install/
-
-don't want to use docker ? check the notes at the end
-
-### 1. Create keys for jwt
-
+## Prerequisites
 ```bash
-make create-keys
+$ docker --version
+Docker version 17.05.0-ce, build 89658be
+ 
+$ docker-compose --version
+docker-compose version 1.22.0, build f46880fe
+ 
+$ make --version
+GNU Make 4.1
 ```
 
-this will generate a private / public key pair that we will use to sign our jwts.
-
-notes:
-1) you don't need to run this if you already have keys
-2) you only need a public key if the service is not signing the tokens
-
-
-### 2. Run Tests
-
-run tests, static type checker and linter
-
+## Development
 ```bash
-make test
-make type-check
-make lint
+$ make start-dev
 ```
 
-### 3. Try it out
-
+Inside the container now:
 ```bash
-make start-dev
-
-curl -X GET 0.0.0.0:8000 \
- -H "Content-type: application/json" \
- -H "Accept: application/json" 
-
-
+$ make run-tests
+$ history -r .history
+$ cd backend; 
+$ ./manage.py migrate
+$ ./manage.py runserver 0.0.0.0:8000
 ```
 
-### 4. CI
-
-setup travis ci
-setup codecov
-set codecov env variable on travis
-
-### 5. Initial commit
-
-### 6. Notes
-
-if you don't want to use docker you can:
-
-#### create/activate a virtual env
+Test it from outside:
 ```bash
-pyhton3 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
+$ curl -X GET http://0.0.0.0:8000/
+{"image":"backend","tag":"dev","up_time":"00:00:45"}
 ```
 
-#### explore the Makefile
-the Makefile relies on docker but check you can run all the commands without it.
+Ready for dev both on new backend feature or frontend features
 
-#### export variables to your env:
-
-```bash
-set -a 
-source .env_vars/django 
-source .env_vars/postgres 
-set +a 
-```
-#### deal with the database
-
-you can:
-1) install/setup postgres on your machine
-3) use sqlite (requires changing the settings)
-
-
-
-Bootstrapped with https://github.com/Spin14/django-rest-jwt-service-cookiecutter.git
+---
+_Bootstrapped with https://github.com/Spin14/django-rest-jwt-service-cookiecutter.git_
