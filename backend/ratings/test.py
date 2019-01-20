@@ -72,30 +72,31 @@ class TestRatingsApi(APITestCase):
     def test_create_400(self):
         self.assertEqual(Rating.objects.count(), 0)
         post_data = {'movie': self.movie.id}
-        response = self.client.post(self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
+        response = self.client.post(
+            self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'score': ['This field is required.']})
         self.assertEqual(Rating.objects.count(), 0)
 
         post_data['score'] = 6  # > 5
-        response = self.client.post(self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
+        response = self.client.post(
+            self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'score': ['Ensure this value is less than or equal to 5.']})
         self.assertEqual(Rating.objects.count(), 0)
 
         post_data['score'] = 0  # < 1
-        response = self.client.post(self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
+        response = self.client.post(
+            self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'score': ['Ensure this value is greater than or equal to 1.']})
         self.assertEqual(Rating.objects.count(), 0)
 
     def test_create_201(self):
         self.assertEqual(Rating.objects.count(), 0)
-        post_data = {
-            'movie': self.movie.id,
-            'score': 5
-        }
-        response = self.client.post(self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
+        post_data = {'movie': self.movie.id, 'score': 5}
+        response = self.client.post(
+            self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(response.json()), 3)
         self.assertEqual(response.json()['user'], self.user.pk)

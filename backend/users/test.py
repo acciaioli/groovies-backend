@@ -1,11 +1,7 @@
 import json
-from typing import Optional
-from unittest.mock import patch
 
 from django.contrib.auth import authenticate
-from django.core import mail
-from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from rest_framework.test import APITestCase
 from rest_framework_jwt.settings import api_settings
 from jwt import ExpiredSignature, DecodeError
@@ -80,8 +76,9 @@ class TestUserModel(TestCase):
         token = user.create_jwt()
         try:
             api_settings.JWT_DECODE_HANDLER(token)
-        except (ExpiredSignature, DecodeError):
-            self.assertTrue(False)
+        # on success, the lines bellow will not run
+        except (ExpiredSignature, DecodeError):  # pragma: no cover
+            self.assertTrue(False)  # pragma: no cover
         bad_token = f'{token}_taint'
         with self.assertRaises(DecodeError):
             api_settings.JWT_DECODE_HANDLER(bad_token)

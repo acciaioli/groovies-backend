@@ -15,4 +15,3 @@ class RatingSerializer(serializers.ModelSerializer):
         model = Rating
         fields = ('user', 'movie', 'score')
         read_only_fields = ('user', )
-

@@ -1,6 +1,6 @@
 [run]
 branch = True
 
-source = backend, utils
+source = backend, users, room, movies, ratings
 
-omit = *migrations*, *urls*, *test*, *wsgi.py
+omit = *wsgi.py

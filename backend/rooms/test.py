@@ -91,7 +91,8 @@ class TestRoomsApi(APITestCase):
     def test_create_201(self):
         self.assertEqual(Room.objects.count(), 1)
         post_data = {'slug': 'iceland'}
-        response = self.client.post(self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
+        response = self.client.post(
+            self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(response.json()), 4)

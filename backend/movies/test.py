@@ -1,5 +1,3 @@
-import json
-
 from django.test import TestCase
 from django.db import IntegrityError
 from rest_framework.test import APITestCase
@@ -49,8 +47,3 @@ class TestMovieSerializer(TestCase):
 class TestMoviesApi(APITestCase):
     URL = '/movies'
     CONTENT_TYPE = 'application/json'
-
-    def setUp(self):
-        self.user = User.objects.create_user(**USER_JOAO)
-
-        self.http_auth = {'HTTP_AUTHORIZATION': f'JWT {self.user.create_jwt()}'}
