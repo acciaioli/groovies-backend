@@ -5,7 +5,8 @@
 
 Backend for the Groovies Project
 
-## Prerequisites
+## Development
+### Prerequisites
 ```bash
 $ docker --version
 Docker version 17.05.0-ce, build 89658be
@@ -17,7 +18,7 @@ $ make --version
 GNU Make 4.1
 ```
 
-## Development
+### Get Started
 ```bash
 $ make start-dev
 ```
