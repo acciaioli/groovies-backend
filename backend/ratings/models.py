@@ -24,3 +24,10 @@ class Rating(models.Model):
         null=True,
         default=None
     )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )

@@ -39,8 +39,12 @@ class User(AbstractBaseUser):
         max_length=20
     )
 
-    updated_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def create_jwt(self) -> str:
         payload = api_settings.JWT_PAYLOAD_HANDLER(self)
