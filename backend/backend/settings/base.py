@@ -26,7 +26,8 @@ INSTALLED_APPS = [
 
     'users',
     'rooms',
-    'movies'
+    'movies',
+    'ratings'
 ]
 
 # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
