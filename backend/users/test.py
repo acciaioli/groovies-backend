@@ -96,12 +96,9 @@ class TestUsersApi(APITestCase):
     URL = '/users'
     CONTENT_TYPE = 'application/json'
 
-    def test_create_user_200(self):
+    def test_create_user_201(self):
         self.assertEqual(User.objects.count(), 0)
-        post_data = {
-            'name': USER_JOAO['name']
-        }
-
+        post_data = {'name': USER_JOAO['name']}
         response = self.client.post(self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(response.json()), 2)

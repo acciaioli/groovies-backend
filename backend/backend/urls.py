@@ -4,5 +4,6 @@ from backend.views import status_view
 
 urlpatterns = [
     path('', status_view),
-    path('', include('users.urls'))
+    path('', include('users.urls')),
+    path('', include('rooms.urls'))
 ]

@@ -16,7 +16,7 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['email']
 
-    USERNAME_MAX_LEN = 30
+    objects = UserManager()
 
     uuid = models.CharField(
         max_length=32,
@@ -41,8 +41,6 @@ class User(AbstractBaseUser):
 
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    objects = UserManager()
 
     def create_jwt(self) -> str:
         payload = api_settings.JWT_PAYLOAD_HANDLER(self)

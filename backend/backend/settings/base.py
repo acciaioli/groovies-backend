@@ -24,7 +24,8 @@ INSTALLED_APPS = [
     'rest_framework',  # utilities for rest apis
     'corsheaders',
 
-    'users'
+    'users',
+    'rooms'
 ]
 
 # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
