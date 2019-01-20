@@ -26,3 +26,10 @@ class Movie(models.Model):
     url = models.URLField(
         null=True
     )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
