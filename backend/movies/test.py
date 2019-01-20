@@ -2,7 +2,6 @@ from django.test import TestCase
 from django.db import IntegrityError
 from rest_framework.test import APITestCase
 
-from users.models import User
 from .models import Movie
 
 
