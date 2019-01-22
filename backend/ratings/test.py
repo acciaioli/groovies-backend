@@ -43,6 +43,11 @@ class TestRatingModel(TestCase):
     def test_create_success(self):
         Rating.objects.create(user=self.user, movie=self.movie)
 
+    def test_unique_together(self):
+        Rating.objects.create(user=self.user, movie=self.movie)
+        with self.assertRaises(IntegrityError):
+            Rating.objects.create(user=self.user, movie=self.movie)
+
 
 class TestRatingManager(TestCase):
     pass
