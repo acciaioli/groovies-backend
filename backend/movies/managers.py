@@ -1,5 +1,7 @@
 from django.db import models
 
 
-class MovieManager(models.Manager):
-    use_in_migrations = True
+class MovieQuerySet(models.QuerySet):
+    def unrated(self, user):
+        return self.exclude(ratings__user=user)
+

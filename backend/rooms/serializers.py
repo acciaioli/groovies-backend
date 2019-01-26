@@ -1,3 +1,5 @@
+from typing import Dict, List, Optional
+
 from rest_framework import serializers
 
 from users.models import User
@@ -15,6 +17,18 @@ class UserInRoomSerializer(serializers.ModelSerializer):
 class RoomSerializer(serializers.ModelSerializer):
     users = UserInRoomSerializer(many=True, read_only=True)
     movies = MovieSerializer(many=True, read_only=True)
+    unrated_movies = serializers.SerializerMethodField(read_only=True)
+
+    @property
+    def user(self) -> Optional[User]:
+        try:
+            return self.context['request'].user
+        except KeyError:
+            return None
+
+    def get_unrated_movies(self, room: Room) -> List[Dict]:
+        qs = room.movies.unrated(user=self.user)
+        return MovieSerializer(qs, many=True).data
 
     def update(self, instance, validated_data):
         instance.sync_user(self.context['request'].user)
@@ -25,5 +39,5 @@ class RoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = ('slug', 'mood', 'admin', 'users', 'movies')
+        fields = ('slug', 'mood', 'admin', 'users', 'movies', 'unrated_movies')
         read_only_fields = ('admin', )

@@ -20,6 +20,7 @@ flake8 = "*"
 mypy = "*"
 codecov = "*"
 coverage = "*"
+django-extensions = "*"
 
 [requires]
 python_version = "3.7"

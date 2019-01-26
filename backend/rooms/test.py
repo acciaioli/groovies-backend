@@ -6,6 +6,8 @@ from rest_framework.test import APITestCase
 
 from users.models import User
 from movies.models import Movie
+from movies.serializers import MovieSerializer
+from ratings.models import Rating
 from .models import Room
 from . import constants
 
@@ -87,37 +89,39 @@ class TestRoomSerializer(TestCase):
 
 class TestRoomsApi(APITestCase):
     URL = '/rooms'
-    CONTENT_TYPE = 'application/json'
+    CT = 'application/json'
 
     def setUp(self):
         [Movie.objects.create(title=f'title_{i}', year=2019) for i in range(20)]
 
         self.user = User.objects.create_user(**USER_JOAO)
-
+        self.admin = User.objects.create_user(**USER_CHI)
         self.http_auth = {'HTTP_AUTHORIZATION': f'JWT {self.user.create_jwt()}'}
+        self.http_admin_auth = {'HTTP_AUTHORIZATION': f'JWT {self.admin.create_jwt()}'}
 
-        self.room = Room.objects.create_room(slug='porchester', admin=User.objects.create_user(**USER_CHI))
+        self.room = Room.objects.create_room(slug='porchester', admin=self.admin)
 
     def test_create_401(self):
         self.assertEqual(Room.objects.count(), 1)
-        post_data = {'slug': 'iceland'}
-        response = self.client.post(self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE)
-        self.assertEqual(response.status_code, 401)
+        post_data = json.dumps({'slug': 'iceland'})
+        r = self.client.post(self.URL, data=post_data, content_type=self.CT)
+        self.assertEqual(r.status_code, 401)
         self.assertEqual(Room.objects.count(), 1)
 
     def test_create_201(self):
         self.assertEqual(Room.objects.count(), 1)
-        post_data = {'slug': 'iceland'}
-        response = self.client.post(
-            self.URL, data=json.dumps(post_data), content_type=self.CONTENT_TYPE, **self.http_auth)
+        post_data = json.dumps({'slug': 'iceland'})
+        r = self.client.post(self.URL, data=post_data, content_type=self.CT, **self.http_auth)
 
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response.json()), 5)
-        self.assertEqual(response.json()['slug'], 'iceland')
-        self.assertEqual(response.json()['mood'], constants.MOOD_ANY['key'])
-        self.assertEqual(response.json()['admin'], self.user.pk)
-        self.assertEqual(response.json()['users'], [{'name': self.user.name}])
-        self.assertEqual(len(response.json()['movies']), Room.objects.CHALLENGE_MOVIES)
+        self.assertEqual(r.status_code, 201)
+        r_json = r.json()
+        self.assertEqual(len(r_json), 6)
+        self.assertEqual(r_json['slug'], 'iceland')
+        self.assertEqual(r_json['mood'], constants.MOOD_ANY['key'])
+        self.assertEqual(r_json['admin'], self.user.pk)
+        self.assertEqual(r_json['users'], [{'name': self.user.name}])
+        self.assertEqual(len(r_json['movies']), Room.objects.CHALLENGE_MOVIES)
+        self.assertEqual(r_json['unrated_movies'], r_json['movies'])
 
         self.assertEqual(Room.objects.count(), 2)
         created_room = Room.objects.get(slug='iceland')
@@ -126,11 +130,51 @@ class TestRoomsApi(APITestCase):
         self.assertEqual(list(created_room.users.all()), [self.user])
         self.assertEqual(created_room.movies.count(), Room.objects.CHALLENGE_MOVIES)
 
+    def test_retrieve_401(self):
+        url = f'{self.URL}/{self.room.slug}'
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 401)
+
+    def test_retrieve_403(self):
+        url = f'{self.URL}/{self.room.slug}'
+        r = self.client.get(url, **self.http_auth)
+        self.assertEqual(r.status_code, 403)
+
+    def test_retrieve_200(self):
+        self.assertEqual(Room.objects.count(), 1)
+        url = f'{self.URL}/{self.room.slug}'
+
+        r = self.client.get(url, **self.http_admin_auth)
+        self.assertEqual(r.status_code, 200)
+        r_json = r.json()
+        self.assertEqual(len(r_json), 6)
+        self.assertEqual(r_json['slug'], self.room.slug)
+        self.assertEqual(r_json['mood'], self.room.mood)
+        self.assertEqual(r_json['admin'], self.admin.pk)
+        self.assertEqual(r_json['users'], [{'name': self.room.admin.name}])
+        self.assertEqual(len(r_json['movies']), Room.objects.CHALLENGE_MOVIES)
+        self.assertEqual(r_json['unrated_movies'], r_json['movies'])
+
+        rated_movie = self.room.movies.order_by('?').first()
+        Rating.objects.create(user=self.admin, movie=rated_movie, score=3)
+        r_2 = self.client.get(url, **self.http_admin_auth)
+        r_2_json = r_2.json()
+        self.assertEqual(r_2.status_code, 200)
+        self.assertEqual(len(r_2_json), 6)
+        self.assertEqual(r_2_json['slug'], r_json['slug'])
+        self.assertEqual(r_2_json['mood'], r_json['mood'])
+        self.assertEqual(r_2_json['admin'], r_json['admin'])
+        self.assertEqual(r_2_json['users'], r_json['users'])
+        self.assertEqual(
+            len(r_2_json['movies']), len(r_json['movies']))
+        self.assertEqual(
+            len(r_2_json['unrated_movies']), len(r_json['unrated_movies']) - 1),
+
     def test_join_401(self):
         self.assertEqual(Room.objects.count(), 1)
         url = f'{self.URL}/{self.room.slug}/join'
-        response = self.client.put(url)
-        self.assertEqual(response.status_code, 401)
+        r = self.client.patch(url)
+        self.assertEqual(r.status_code, 401)
         self.assertEqual(Room.objects.count(), 1)
 
     def test_join_200(self):
@@ -138,15 +182,18 @@ class TestRoomsApi(APITestCase):
         self.assertEqual(self.room.users.count(), 1)
         self.assertEqual(self.room.movies.count(), Room.objects.CHALLENGE_MOVIES)
         url = f'{self.URL}/{self.room.slug}/join'
-        response = self.client.patch(url, **self.http_auth)
+        r = self.client.patch(url, **self.http_auth)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 5)
-        self.assertEqual(response.json()['slug'], self.room.slug)
-        self.assertEqual(response.json()['mood'], self.room.mood)
-        self.assertEqual(response.json()['admin'], self.room.admin.pk)
-        self.assertEqual(response.json()['users'], [{'name': self.user.name}, {'name': self.room.admin.name}])
-        self.assertEqual(len(response.json()['movies']), Room.objects.CHALLENGE_MOVIES)
+        self.assertEqual(r.status_code, 200)
+        r_json = r.json()
+        self.assertEqual(len(r_json), 6)
+        self.assertEqual(r_json['slug'], self.room.slug)
+        self.assertEqual(r_json['mood'], self.room.mood)
+        self.assertEqual(r_json['admin'], self.room.admin.pk)
+        self.assertEqual(r_json['users'], [{'name': self.user.name}, {'name': self.room.admin.name}])
+        self.assertEqual(len(r_json['movies']), Room.objects.CHALLENGE_MOVIES)
+        self.assertEqual(len(r_json['movies']), Room.objects.CHALLENGE_MOVIES)
+        self.assertEqual(r_json['unrated_movies'], r_json['movies'])
 
         self.assertEqual(Room.objects.count(), 1)
         self.room.refresh_from_db()
@@ -155,14 +202,16 @@ class TestRoomsApi(APITestCase):
         self.assertEqual(self.room.movies.count(), Room.objects.CHALLENGE_MOVIES)
 
         # user can "join" again
-        response = self.client.patch(url, **self.http_auth)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 5)
-        self.assertEqual(response.json()['slug'], self.room.slug)
-        self.assertEqual(response.json()['mood'], self.room.mood)
-        self.assertEqual(response.json()['admin'], self.room.admin.pk)
-        self.assertEqual(response.json()['users'], [{'name': self.user.name}, {'name': self.room.admin.name}])
-        self.assertEqual(len(response.json()['movies']), Room.objects.CHALLENGE_MOVIES)
+        r_2 = self.client.patch(url, **self.http_auth)
+        self.assertEqual(r_2.status_code, 200)
+        r_2_json = r_2.json()
+        self.assertEqual(len(r_2_json), 6)
+        self.assertEqual(r_2_json['slug'], r_json['slug'])
+        self.assertEqual(r_2_json['mood'], r_json['mood'])
+        self.assertEqual(r_2_json['admin'], r_json['admin'])
+        self.assertEqual(r_2_json['users'], r_json['users'])
+        self.assertEqual(len(r_2_json['movies']), len(r_json['movies']))
+        self.assertEqual(len(r_2_json['unrated_movies']), len(r_json['unrated_movies'])),
 
         self.assertEqual(Room.objects.count(), 1)
         self.room.refresh_from_db()

@@ -1,10 +1,10 @@
 from django.db import models
 
-from .managers import MovieManager
+from .managers import MovieQuerySet
 
 
 class Movie(models.Model):
-    objects = MovieManager()
+    objects = MovieQuerySet.as_manager()
 
     title = models.CharField(
         max_length=100,

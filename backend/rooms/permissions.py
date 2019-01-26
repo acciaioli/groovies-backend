@@ -1,5 +1,6 @@
-from rest_framework import permissions
+from rest_framework.permissions import BasePermission
 
 
-class RoomPermissions(permissions.IsAuthenticated):
-    pass
+class RoomPermissions(BasePermission):
+    def has_object_permission(self, request, view, room):
+        return room.users.filter(pk=request.user.pk).exists()
