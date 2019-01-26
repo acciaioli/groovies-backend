@@ -6,10 +6,10 @@ from rest_framework.test import APITestCase
 from rest_framework_jwt.settings import api_settings
 from jwt import ExpiredSignature, DecodeError
 
+from movies.models import Movie
+from ratings.models import Rating
+from rooms.models import Room
 from .models import User
-# from .serializers import ConfirmEmailSerializer
-# from .tasks import broadcast_registration, send_confirmation_email, on_create
-
 
 USER_CHI = {
     'email': 'chi@groovies.com',
@@ -68,6 +68,46 @@ class TestUserManager(TestCase):
         user = User.objects.create_session_user(USER_CHI['name'])
         self.assertEqual(User.objects.count(), 1)
         self.assertEqual(user.name, USER_CHI['name'])
+
+    def test_room_ratings_count(self):
+        movies_2018 = [Movie.objects.create(title=f'title_{i}', year=2018) for i in
+                       range(Room.objects.CHALLENGE_MOVIES)]
+        movies_2019 = [Movie.objects.create(title=f'title_{i}', year=2019) for i in
+                       range(Room.objects.CHALLENGE_MOVIES)]
+        user_1 = User.objects.create_session_user(USER_CHI['name'])
+        user_2 = User.objects.create_session_user(USER_JOAO['name'])
+        room = Room.objects.create(admin=user_1, slug='slug')
+        room.sync_user(user_1)
+        room.sync_user(user_2)
+        room.movies.set(movies_2018)
+        self.assertEqual(room.users.count(), 2)
+        self.assertEqual(room.movies.count(), Room.objects.CHALLENGE_MOVIES)
+
+        # 2018 movies ratings
+        ratings = [
+            Rating(user=user_1, movie=movies_2018[0], score=1),
+            Rating(user=user_1, movie=movies_2018[3], score=2),
+            Rating(user=user_1, movie=movies_2018[8], score=3),
+
+            # 2019 movie ratings
+            Rating(user=user_1, movie=movies_2019[1], score=1),
+            Rating(user=user_1, movie=movies_2019[7], score=3),
+
+            # user 2
+            Rating(user=user_2, movie=movies_2019[0], score=1),
+        ]
+        Rating.objects.bulk_create(ratings)
+
+        qs = User.objects.rated_count(room=room)
+        self.assertEqual(qs.count(), 2)
+        self.assertIn({
+            'name': USER_CHI['name'],
+            'rated_count': 3
+        }, qs)
+        self.assertIn({
+            'name': USER_JOAO['name'],
+            'rated_count': 0
+        }, qs)
 
 
 class TestUserModel(TestCase):
