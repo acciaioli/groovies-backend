@@ -98,6 +98,9 @@ class TestUserManager(TestCase):
         ]
         Rating.objects.bulk_create(ratings)
 
+        User.objects.create_session_user('not in the room')
+        self.assertEqual(User.objects.count(), 3)
+
         qs = User.objects.rated_count(room=room)
         self.assertEqual(qs.count(), 2)
         self.assertIn({

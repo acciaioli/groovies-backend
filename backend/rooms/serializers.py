@@ -7,15 +7,8 @@ from movies.serializers import MovieSerializer
 from .models import Room
 
 
-class UserInRoomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('name',)
-        read_only_fields = ('name',)
-
-
 class RoomSerializer(serializers.ModelSerializer):
-    users = UserInRoomSerializer(many=True, read_only=True)
+    users = serializers.SerializerMethodField(read_only=True)
     movies = MovieSerializer(many=True, read_only=True)
     unrated_movies = serializers.SerializerMethodField(read_only=True)
 
@@ -25,6 +18,9 @@ class RoomSerializer(serializers.ModelSerializer):
             return self.context['request'].user
         except KeyError:
             return None
+
+    def get_users(self, room: Room) -> List[Dict]:
+        return list(room.users.rated_count(room))
 
     def get_unrated_movies(self, room: Room) -> List[Dict]:
         qs = room.movies.unrated(user=self.user)
