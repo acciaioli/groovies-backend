@@ -6,7 +6,6 @@ from rest_framework.test import APITestCase
 
 from users.models import User
 from movies.models import Movie
-from movies.serializers import MovieSerializer
 from ratings.models import Rating
 from .models import Room
 from . import constants
