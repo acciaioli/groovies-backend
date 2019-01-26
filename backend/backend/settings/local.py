@@ -3,6 +3,8 @@ from .base import *  # noqa: F403 F401
 
 DEBUG = True
 
+ALLOWED_HOSTS = ["*"]
+
 INSTALLED_APPS.append('django_extensions')  # noqa: F405
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
