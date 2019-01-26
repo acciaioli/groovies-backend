@@ -118,7 +118,7 @@ class TestRoomsApi(APITestCase):
         self.assertEqual(r_json['slug'], 'iceland')
         self.assertEqual(r_json['mood'], constants.MOOD_ANY['key'])
         self.assertEqual(r_json['admin'], self.user.pk)
-        self.assertEqual(r_json['users'], [{'name': self.user.name}])
+        self.assertEqual(r_json['users'], [{'name': self.user.name, 'rated_count': 0}])
         self.assertEqual(len(r_json['movies']), Room.objects.CHALLENGE_MOVIES)
         self.assertEqual(r_json['unrated_movies'], r_json['movies'])
 
@@ -150,7 +150,7 @@ class TestRoomsApi(APITestCase):
         self.assertEqual(r_json['slug'], self.room.slug)
         self.assertEqual(r_json['mood'], self.room.mood)
         self.assertEqual(r_json['admin'], self.admin.pk)
-        self.assertEqual(r_json['users'], [{'name': self.room.admin.name}])
+        self.assertEqual(r_json['users'], [{'name': self.room.admin.name, 'rated_count': 0}])
         self.assertEqual(len(r_json['movies']), Room.objects.CHALLENGE_MOVIES)
         self.assertEqual(r_json['unrated_movies'], r_json['movies'])
 
@@ -163,7 +163,7 @@ class TestRoomsApi(APITestCase):
         self.assertEqual(r_2_json['slug'], r_json['slug'])
         self.assertEqual(r_2_json['mood'], r_json['mood'])
         self.assertEqual(r_2_json['admin'], r_json['admin'])
-        self.assertEqual(r_2_json['users'], r_json['users'])
+        self.assertEqual(r_2_json['users'], [{'name': self.room.admin.name, 'rated_count': 1}])
         self.assertEqual(
             len(r_2_json['movies']), len(r_json['movies']))
         self.assertEqual(
@@ -189,7 +189,7 @@ class TestRoomsApi(APITestCase):
         self.assertEqual(r_json['slug'], self.room.slug)
         self.assertEqual(r_json['mood'], self.room.mood)
         self.assertEqual(r_json['admin'], self.room.admin.pk)
-        self.assertEqual(r_json['users'], [{'name': self.user.name}, {'name': self.room.admin.name}])
+        self.assertEqual(len(r_json['users']), 2)
         self.assertEqual(len(r_json['movies']), Room.objects.CHALLENGE_MOVIES)
         self.assertEqual(len(r_json['movies']), Room.objects.CHALLENGE_MOVIES)
         self.assertEqual(r_json['unrated_movies'], r_json['movies'])
