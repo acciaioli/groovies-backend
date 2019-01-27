@@ -1,6 +1,8 @@
-from django.db import models
+from django.db import models, IntegrityError
 
+from ml_proxy import get_proxy
 from . import constants
+from .exceptions import RoomUsersNotReady
 from .managers import RoomManager
 
 
@@ -38,6 +40,11 @@ class Room(models.Model):
         related_name='rooms'
     )
 
+    results = models.ManyToManyField(
+        to='movies.Movie',
+        related_name='rooms_as_results'
+    )
+
     updated_at = models.DateTimeField(
         auto_now=True
     )
@@ -45,5 +52,30 @@ class Room(models.Model):
         auto_now_add=True
     )
 
-    def sync_user(self, user):
+    def sync_user(self, user) -> None:
         self.users.add(user)
+
+    @property
+    def users_are_ready(self) -> bool:
+        total_expected_ratings = self.users.count() * constants.CHALLENGE_MOVIES
+        total_ratings = sum([user['rated_count'] for user in self.users.rated_count(self)])
+        return total_expected_ratings == total_ratings
+
+    def get_or_create_results(self):
+        if self.results.exists():
+            return self.results.all()
+
+        # lets get them if we can!
+
+        if not self.users_are_ready:
+            raise RoomUsersNotReady
+
+        results = get_proxy().get_recommendation(constants.RESULTS_MOVIES)
+        if len(results) != constants.RESULTS_MOVIES:
+            raise IntegrityError
+        self.results.set(results)
+
+        return self.results
+
+
+

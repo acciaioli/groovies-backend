@@ -11,9 +11,11 @@ class DevMLProxy(MLProxyInterface):
     """
 
     @staticmethod
-    def get_challenge() -> List[Movie]:
-        return Movie.objects.all()[:10]
+    def get_challenge(n: int) -> List[Movie]:
+        # return the n first movies
+        return list(Movie.objects.all())[:n]
 
     @staticmethod
-    def get_recommendation() -> List[Movie]:
-        return Movie.objects.all()[10:15]
+    def get_recommendation(n: int) -> List[Movie]:
+        # return the n last movies
+        return list(Movie.objects.all())[-n:]

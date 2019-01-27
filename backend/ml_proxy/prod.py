@@ -10,9 +10,9 @@ class ProductionMLProxy(MLProxyInterface):
     """
 
     @staticmethod
-    def get_challenge() -> List[Movie]:
+    def get_challenge(n: int) -> List[Movie]:
         return []
 
     @staticmethod
-    def get_recommendation() -> List[Movie]:
+    def get_recommendation(n: int) -> List[Movie]:
         return []

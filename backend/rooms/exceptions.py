@@ -1,0 +1,2 @@
+class RoomUsersNotReady(Exception):
+    pass

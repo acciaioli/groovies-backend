@@ -8,6 +8,7 @@ from jwt import ExpiredSignature, DecodeError
 
 from movies.models import Movie
 from ratings.models import Rating
+from rooms.constants import CHALLENGE_MOVIES
 from rooms.models import Room
 from .models import User
 
@@ -71,9 +72,9 @@ class TestUserManager(TestCase):
 
     def test_room_ratings_count(self):
         movies_2018 = [Movie.objects.create(title=f'title_{i}', year=2018) for i in
-                       range(Room.objects.CHALLENGE_MOVIES)]
+                       range(CHALLENGE_MOVIES)]
         movies_2019 = [Movie.objects.create(title=f'title_{i}', year=2019) for i in
-                       range(Room.objects.CHALLENGE_MOVIES)]
+                       range(CHALLENGE_MOVIES)]
         user_1 = User.objects.create_session_user(USER_CHI['name'])
         user_2 = User.objects.create_session_user(USER_JOAO['name'])
         room = Room.objects.create(admin=user_1, slug='slug')
@@ -81,7 +82,7 @@ class TestUserManager(TestCase):
         room.sync_user(user_2)
         room.movies.set(movies_2018)
         self.assertEqual(room.users.count(), 2)
-        self.assertEqual(room.movies.count(), Room.objects.CHALLENGE_MOVIES)
+        self.assertEqual(room.movies.count(), CHALLENGE_MOVIES)
 
         # 2018 movies ratings
         ratings = [

@@ -18,3 +18,7 @@ MOOD_SAD = {
 
 def moods() -> List[Dict[str, str]]:
     return [MOOD_ANY, MOOD_HAPPY, MOOD_SAD]
+
+
+CHALLENGE_MOVIES = 10
+RESULTS_MOVIES = 3
