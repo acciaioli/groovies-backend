@@ -7,10 +7,10 @@ from movies.models import Movie
 class MLProxyInterface(ABC):
     @staticmethod
     @abstractmethod
-    def get_challenge() -> List[Movie]:
+    def get_challenge(n: int) -> List[Movie]:
         pass
 
     @staticmethod
     @abstractmethod
-    def get_recommendation() -> List[Movie]:
+    def get_recommendation(n: int) -> List[Movie]:
         pass
