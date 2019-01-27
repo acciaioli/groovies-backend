@@ -76,6 +76,3 @@ class Room(models.Model):
         self.results.set(results)
 
         return self.results
-
-
-

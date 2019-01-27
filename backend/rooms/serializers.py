@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from users.models import User
 from movies.serializers import MovieSerializer
+from .exceptions import RoomUsersNotReady
 from .models import Room
 
 
@@ -37,3 +38,20 @@ class RoomSerializer(serializers.ModelSerializer):
         model = Room
         fields = ('slug', 'mood', 'admin', 'users', 'movies', 'unrated_movies')
         read_only_fields = ('admin', )
+
+
+class RoomResultsSerializer(serializers.ModelSerializer):
+    results = serializers.SerializerMethodField(read_only=True)
+
+    def get_results(self, room):
+        try:
+            qs = room.get_or_create_results()
+        except RoomUsersNotReady:
+            raise serializers.ValidationError('room users are not ready for results')
+
+        return MovieSerializer(qs, many=True).data
+
+    class Meta:
+        model = Room
+        fields = ('slug', 'results')
+        read_only_fields = ('slug',)

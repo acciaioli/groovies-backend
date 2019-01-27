@@ -1,5 +1,4 @@
 import json
-from unittest.mock import patch
 
 from django.test import TestCase
 from django.db import IntegrityError
@@ -11,7 +10,6 @@ from ratings.models import Rating
 from .exceptions import RoomUsersNotReady
 from .models import Room
 from . import constants
-
 
 USER_CHI = {
     'email': 'chi@groovies.com',
@@ -105,7 +103,8 @@ class TestRoomManager(TestCase):
         with self.assertRaises(RoomUsersNotReady):
             room.get_or_create_results()
 
-        Rating.objects.bulk_create([Rating(user=self.user, movie=movie, score=1) for movie in list(room.movies.all())])
+        Rating.objects.bulk_create([Rating(user=self.user, movie=movie, score=1)
+                                    for movie in list(room.movies.all())])
         admin_rated_count = room.users.rated_count(room)[0]['rated_count']
         self.assertEqual(admin_rated_count, constants.CHALLENGE_MOVIES)
 
@@ -113,7 +112,8 @@ class TestRoomManager(TestCase):
         with self.assertRaises(RoomUsersNotReady):
             room.get_or_create_results()
 
-        Rating.objects.bulk_create([Rating(user=user_2, movie=movie, score=1) for movie in list(room.movies.all())])
+        Rating.objects.bulk_create([Rating(user=user_2, movie=movie, score=1)
+                                    for movie in list(room.movies.all())])
         user_2_rated_count = room.users.rated_count(room)[1]['rated_count']
         self.assertEqual(user_2_rated_count, constants.CHALLENGE_MOVIES)
 
@@ -290,7 +290,9 @@ class TestRoomsApi(APITestCase):
         r = self.client.get(url, **self.http_admin_auth)
         self.assertEqual(r.status_code, 200)
         r_json = r.json()
-        self.assertEqual(len(r_json), constants.RESULTS_MOVIES)
+        self.assertEqual(len(r_json), 2)
+        self.assertEqual(r_json['slug'], self.room.slug)
+        self.assertEqual(len(r_json['results']), constants.RESULTS_MOVIES)
         self.room.refresh_from_db()
         self.assertEqual(self.room.results.count(), constants.RESULTS_MOVIES)
 

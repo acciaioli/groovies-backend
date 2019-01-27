@@ -2,13 +2,9 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateMo
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
 
-from movies.serializers import MovieSerializer
-from .exceptions import RoomUsersNotReady
 from .models import Room
-from .serializers import RoomSerializer
+from .serializers import RoomSerializer, RoomResultsSerializer
 from .permissions import RoomPermissions
 
 
@@ -25,12 +21,6 @@ class RoomViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Generi
     def join(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get'], serializer_class=RoomResultsSerializer)
     def results(self, request, *args, **kwargs):
-        room = self.get_object()
-        try:
-            results = room.get_or_create_results()
-        except RoomUsersNotReady:
-            raise ValidationError('room users are not ready for results')
-
-        return Response(MovieSerializer(results, many=True).data)
+        return self.retrieve(request, *args, **kwargs)
