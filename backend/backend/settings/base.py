@@ -19,9 +19,13 @@ ROOT_URLCONF = 'backend.urls'
 # https://docs.djangoproject.com/en/2.1/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+# https://channels.readthedocs.io/en/latest/topics/routing.html?highlight=ASGI_APPLICATION
+ASGI_APPLICATION = "backend.routing.application"
+
 # https://docs.djangoproject.com/en/2.1/ref/settings/#installed-apps
 INSTALLED_APPS = [
     'rest_framework',  # utilities for rest apis
+    'channels',
     'corsheaders',
 
     'users',
@@ -71,6 +75,15 @@ DATABASES = {
 
         # https://docs.djangoproject.com/en/2.1/ref/settings/#conn-max-age
         'CONN_MAX_AGE': int(os.getenv('POSTGRES_CONN_MAX_AGE', '0'))
+    },
+}
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(os.getenv('REDIS_HOST'), os.getenv('REDIS_PORT'))],
+        },
     },
 }
 

@@ -1,17 +1,28 @@
 version: '3'
 
 services:
+
   backend_postgres:
     image: postgres:9.6
     volumes:
       - pgdata:/var/lib/postgresql/data
     env_file:
-      - ./.env_vars/postgres
+      - ./.dev/env/postgres
+
+  backend_redis:
+    image: redis:5.0
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./.dev/redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+
   web:
     image: web
     env_file:
-      - ./.env_vars/postgres
-      - ./.env_vars/django
+      - ./.dev/env/postgres
+      - ./.dev/env/django
+      - ./.dev/env/redis
     environment:
       - DJANGO_SECRET_KEY=local_secret
     build: ./
@@ -21,6 +32,7 @@ services:
       - "8000:8000"
     depends_on:
       - backend_postgres
+      - backend_redis
 
 volumes:
   pgdata:
