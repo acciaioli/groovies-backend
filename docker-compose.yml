@@ -7,7 +7,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     env_file:
-      - ./.dev/env/postgres
+      - ./.dev/env_vars/postgres
 
   backend_redis:
     image: redis:5.0
@@ -20,9 +20,9 @@ services:
   web:
     image: web
     env_file:
-      - ./.dev/env/postgres
-      - ./.dev/env/django
-      - ./.dev/env/redis
+      - ./.dev/env_vars/postgres
+      - ./.dev/env_vars/django
+      - ./.dev/env_vars/redis
     environment:
       - DJANGO_SECRET_KEY=local_secret
     build: ./
