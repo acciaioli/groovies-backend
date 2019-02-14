@@ -64,9 +64,22 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
     async def disconnect(self, close_code):
         pass
 
-    async def user_join(self, *args):
+    async def receive_json(self, content, **kwargs):
+        if 'type' not in content:
+            return
+
+        if content['type'] == 'user.update':
+            await self.channel_layer.group_send(
+                group=self.room.slug,
+                message={'type': 'user.update'}
+            )
+
+    async def user_join(self, event):
+        return await self.user_update(event)
+
+    async def user_update(self, event):
         users = await database_sync_to_async(self.user_ratings_count)()
-        await self.send_json(list(users))
+        await self.send_json(content=dict(event, users=list(users)))
 
 #    def users_are_ready(self):
 #        return self.room.users_are_ready
@@ -78,9 +91,4 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
 #        results = await database_sync_to_async(self.room_get_or_create_results)()
 #        await self.send_json(list(results))
 #
-#    async def receive_json(self, msg, **kwargs):
-#       if msg['type'] == 'challenge.finished':
-#           await self.user_update()
-#           if await database_sync_to_async(self.users_are_ready)():
-#               await self.results_update()
 #
