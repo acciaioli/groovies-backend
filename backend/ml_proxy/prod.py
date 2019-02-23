@@ -11,8 +11,8 @@ class ProductionMLProxy(MLProxyInterface):
 
     @staticmethod
     def get_challenge(n: int) -> List[Movie]:
-        return []
+        return []  # pragma: no cover
 
     @staticmethod
     def get_recommendation(n: int) -> List[Movie]:
-        return []
+        return []  # pragma: no cover
