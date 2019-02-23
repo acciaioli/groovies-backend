@@ -57,8 +57,12 @@ class Room(models.Model):
 
     @property
     def users_are_ready(self) -> bool:
+        users_rated_count = self.users.rated_count(self)
+        return self._users_are_ready(users_rated_count)
+
+    def _users_are_ready(self, users_rated_count: list) -> bool:
         total_expected_ratings = self.users.count() * constants.CHALLENGE_MOVIES
-        total_ratings = sum([user['rated_count'] for user in self.users.rated_count(self)])
+        total_ratings = sum([user['rated_count'] for user in users_rated_count])
         return total_expected_ratings == total_ratings
 
     def get_or_create_results(self):
@@ -73,6 +77,6 @@ class Room(models.Model):
         results = get_proxy().get_recommendation(constants.RESULTS_MOVIES)
         if len(results) != constants.RESULTS_MOVIES:
             raise IntegrityError
-        self.results.set(results)
 
-        return self.results
+        self.results.set(results)
+        return self.results.all()

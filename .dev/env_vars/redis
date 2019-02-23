@@ -1,0 +1,4 @@
+REDIS_PASSWORD=redis_password
+REDIS_HOST=backend_redis
+REDIS_PORT=6379
+REDIS_DB_ID=0
