@@ -5,6 +5,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 
 from users.models import User
+from movies.serializers import MovieSerializer
 from .models import Room
 
 
@@ -53,7 +54,6 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
 
         await self.accept()
 
-        # Join room group
         await self.channel_layer.group_add(group=self.room.slug, channel=self.channel_name)
 
         await self.channel_layer.group_send(
@@ -74,21 +74,25 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 message={'type': 'user.update'}
             )
 
+            self.room.refresh_from_db()
+            if self.room.users_are_ready:
+                await self.channel_layer.group_send(
+                    group=self.room.slug,
+                    message={'type': 'results.broadcast'}
+                )
+
     async def user_join(self, event):
         return await self.user_update(event)
 
-    async def user_update(self, event):
-        users = await database_sync_to_async(self.user_ratings_count)()
-        await self.send_json(content=dict(event, users=list(users)))
+    async def user_update(self, *args, **kwargs):
+        users_rated_count = await database_sync_to_async(self.user_ratings_count)()
+        await self.send_json(content={'users': list(users_rated_count)})
 
-#    def users_are_ready(self):
-#        return self.room.users_are_ready
-#
-#    def room_get_or_create_results(self):
-#        return self.room.get_or_create_results()
-#
-#    async def results_update(self):
-#        results = await database_sync_to_async(self.room_get_or_create_results)()
-#        await self.send_json(list(results))
-#
-#
+    def room_get_or_create_results(self):
+        return self.room.get_or_create_results()
+
+    async def results_broadcast(self, *args, **kwargs):
+        results_qs = await database_sync_to_async(self.room_get_or_create_results)()
+        results = MovieSerializer(results_qs, many=True).data
+
+        await self.send_json(content={'results': list(results)})

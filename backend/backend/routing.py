@@ -5,7 +5,6 @@ from urllib import parse
 from django.db import close_old_connections
 from channels.routing import ProtocolTypeRouter, URLRouter
 from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
-from cachedprop import cpd
 
 from rooms.urls import websocket_urlpatterns
 
@@ -16,7 +15,7 @@ class ChannelsMiddleware(ABC):
         self.inner = inner
         self.scope = {}
 
-    @cpd
+    @property
     def query_params(self) -> Dict[str, List[Any]]:
         query_str: str = self.scope['query_string'].decode('utf-8')
         return parse.parse_qs(query_str)
@@ -35,11 +34,10 @@ class ChannelsMiddleware(ABC):
 class JWTAuthMiddleware(ChannelsMiddleware):
 
     def token(self) -> str:
-        return self.query_params['JWT']
+        return self.query_params['JWT'][0]
 
     def intercept(self):
-        jwt = self.query_params['JWT'][0]
-        serializer = VerifyJSONWebTokenSerializer(data={'token': jwt})
+        serializer = VerifyJSONWebTokenSerializer(data={'token': self.token})
         if serializer.is_valid(raise_exception=False):
             user = serializer.validated_data['user']
         else:
