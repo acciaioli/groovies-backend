@@ -1,6 +1,5 @@
 [run]
 branch = True
 
-source = backend, users, rooms, movies, ratings
 
-omit = *wsgi.py
+omit = manage.py, backend/wsgi.py
