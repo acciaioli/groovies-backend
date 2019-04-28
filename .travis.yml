@@ -10,6 +10,7 @@ before_script:
 
 script:
  - docker-compose run -e CODECOV_TOKEN=$CODECOV_TOKEN --rm web bash -c "make run-ci" 
+ - docker build .
 
 after_script:
   - docker-compose down
