@@ -15,6 +15,7 @@ psycopg2-binary = "*"
 gunicorn = "*"
 j-crypto = "*"
 cachedprop = "*"
+sentry-sdk = "==0.7.14"
 
 [dev-packages]
 ipython = "*"
