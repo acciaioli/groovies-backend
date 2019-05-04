@@ -9,7 +9,6 @@ from movies.serializers import MovieSerializer
 from .models import Room
 
 
-#############################################################################
 class BasePermission(ABC):
     @abstractmethod
     async def has_permission(self, consumer) -> bool:
@@ -20,11 +19,9 @@ class IsAuthenticated(BasePermission):
     async def has_permission(self, consumer: Any) -> bool:
         user = consumer.scope.get('user', None)
         return bool(user is not None and user.is_authenticated)
-#############################################################################
 
 
 class RoomConsumer(AsyncJsonWebsocketConsumer):
-    sanity_classes = ()
     permission_classes = (IsAuthenticated,)
 
     def __init__(self, *args, **kwargs):
@@ -47,15 +44,13 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         return self.room.users.rated_count(self.room)
 
     async def connect(self):
-        for permission_class in self.permission_classes:
-            if not await permission_class().has_permission(self):
-                await self.close(code=401)
-                return
+        # for permission_class in self.permission_classes:
+        #     if not await permission_class().has_permission(self):
+        #         await self.close(code=401)
+        #         return
 
         await self.accept()
-
         await self.channel_layer.group_add(group=self.room.slug, channel=self.channel_name)
-
         await self.channel_layer.group_send(
             group=self.room.slug,
             message={'type': 'user.join'}

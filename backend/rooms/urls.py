@@ -12,5 +12,5 @@ urlpatterns = router.urls
 
 
 websocket_urlpatterns = [
-    url(r'^ws/rooms/(?P<slug>[^/]+)/$', RoomConsumer),
+    url(r'^room/(?P<slug>[^/]+)/$', RoomConsumer),
 ]

@@ -9,7 +9,6 @@ from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
 from rooms.urls import websocket_urlpatterns
 
 
-#############################################################################
 class ChannelsMiddleware(ABC):
     def __init__(self, inner):
         self.inner = inner
@@ -33,6 +32,7 @@ class ChannelsMiddleware(ABC):
 
 class JWTAuthMiddleware(ChannelsMiddleware):
 
+    @property
     def token(self) -> str:
         return self.query_params['JWT'][0]
 
@@ -42,8 +42,8 @@ class JWTAuthMiddleware(ChannelsMiddleware):
             user = serializer.validated_data['user']
         else:
             user = None
+
         self.scope['user'] = user
-#############################################################################
 
 
 application = ProtocolTypeRouter({
